@@ -1,1 +1,210 @@
-&lt;!doctype html&gt;&lt;html lang=&apos;tr&apos;&gt;&lt;meta charset=&apos;utf-8&apos;&gt;&lt;meta name=&apos;viewport&apos; content=&apos;width=device-width,initial-scale=1&apos;&gt;&lt;title&gt;NEON RUN&lt;/title&gt;&lt;style&gt;body{margin:0;background:#080b1b;color:#eff;font:16px Arial;text-align:center}h1{color:#53f6ff;letter-spacing:8px;text-shadow:0 0 20px #53f6ff}canvas{width:min(95vw,800px);background:linear-gradient(#111b3b,#080d20);border:1px solid #53f6ff;border-radius:12px}button{padding:14px 24px;margin:8px;border:0;border-radius:10px;background:#53f6ff;font-weight:bold}p{color:#aab8e8}&lt;/style&gt;&lt;h1&gt;NEON RUN&lt;/h1&gt;&lt;p&gt;SPACE / ↑ zıpla • ↓ eğil • P duraklat&lt;/p&gt;&lt;p&gt;Skor: &lt;b id=&apos;score&apos;&gt;0&lt;/b&gt; | Rekor: &lt;b id=&apos;best&apos;&gt;0&lt;/b&gt;&lt;/p&gt;&lt;canvas id=&apos;c&apos; width=&apos;800&apos; height=&apos;400&apos;&gt;&lt;/canvas&gt;&lt;br&gt;&lt;button onclick=&apos;start()&apos;&gt;OYUNA BAŞLA&lt;/button&gt;&lt;button onclick=&apos;jump()&apos;&gt;ZIPLA&lt;/button&gt;&lt;button onclick=&apos;duck()&apos;&gt;EĞİL&lt;/button&gt;&lt;script&gt;const c=document.querySelector(&apos;#c&apos;),x=c.getContext(&apos;2d&apos;),S=document.querySelector(&apos;#score&apos;),B=document.querySelector(&apos;#best&apos;);let run=false,score=0,best=+(localStorage.best||0),speed=5,frame=0,obs=[],orbs=[],p={y:320,vy:0,duck:0};B.textContent=best;function start(){score=0;speed=5;frame=0;obs=[];orbs=[];p.y=320;p.vy=0;run=true}function jump(){if(run&amp;&amp;p.y&gt;=319){p.vy=-14;p.duck=0}}function duck(){if(run&amp;&amp;p.y&gt;=319)p.duck=25}onkeydown=e=&gt;{if(e.code===&apos;Space&apos;||e.code===&apos;ArrowUp&apos;){e.preventDefault();if(!run)start();else jump()}if(e.code===&apos;ArrowDown&apos;)duck();if(e.code===&apos;KeyP&apos;)run=!run};function loop(){requestAnimationFrame(loop);x.clearRect(0,0,800,400);x.fillStyle=&apos;#111b3b&apos;;x.fillRect(0,0,800,400);for(let i=0;i&lt;60;i++){x.fillStyle=&apos;#809bd0&apos;;x.fillRect((i*137-frame*.5)%800,(i*71)%290,2,2)}x.fillStyle=&apos;#53f6ff&apos;;x.fillRect(0,350,800,3);if(run){frame++;score+=.15*speed;speed=Math.min(12,5+score/300);p.vy+=.7;p.y+=p.vy;if(p.y&gt;320){p.y=320;p.vy=0}if(p.duck&gt;0)p.duck--;if(frame%Math.max(35,85-speed*3)===0)obs.push({x:810,y:Math.random()&lt;.5?313:260,h:Math.random()&lt;.5?37:20,w:Math.random()&lt;.5?35:65});if(frame%105===0)orbs.push({x:810,y:220+Math.random()*70});obs.forEach(o=&gt;o.x-=speed);orbs.forEach(o=&gt;o.x-=speed);obs=obs.filter(o=&gt;o.x&gt;-80);orbs=orbs.filter(o=&gt;o.x&gt;-20);let ph=p.duck?25:45,py=p.duck?325:p.y;for(const o of obs)if(125&lt;o.x+o.w&amp;&amp;159&gt;o.x&amp;&amp;py&lt;o.y+o.h&amp;&amp;py+ph&gt;o.y){run=false;best=Math.max(best,Math.floor(score));localStorage.best=best;B.textContent=best}for(let i=orbs.length-1;i&gt;=0;i--)if(Math.hypot(orbs[i].x-140,orbs[i].y-(py+20))&lt;28){score+=25;orbs.splice(i,1)}S.textContent=Math.floor(score)}obs.forEach(o=&gt;{x.fillStyle=&apos;#ff4fd8&apos;;x.shadowBlur=16;x.shadowColor=&apos;#ff4fd8&apos;;x.fillRect(o.x,o.y,o.w,o.h);x.shadowBlur=0});orbs.forEach(o=&gt;{x.fillStyle=&apos;#ffe66d&apos;;x.shadowBlur=18;x.shadowColor=&apos;#ffe66d&apos;;x.beginPath();x.arc(o.x,o.y,9,0,7);x.fill();x.shadowBlur=0});x.fillStyle=&apos;#53f6ff&apos;;x.shadowBlur=20;x.shadowColor=&apos;#53f6ff&apos;;x.fillRect(125,p.duck?325:p.y,34,p.duck?25:45);x.shadowBlur=0;if(!run&amp;&amp;score&gt;0){x.fillStyle=&apos;white&apos;;x.font=&apos;30px Arial&apos;;x.fillText(&apos;OYUN BİTTİ • TEKRAR BAŞLA&apos;,220,180)}}loop();&lt;/script&gt;&lt;/html&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+&lt;meta charset="UTF-8"&gt;
+&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+&lt;title&gt;NEON RUN&lt;/title&gt;
+&lt;style&gt;
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a1a; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: 'Courier New', monospace; overflow: hidden; user-select: none; }
+h1 { color: #0ff; text-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #0ff; font-size: 2.8em; margin-bottom: 8px; letter-spacing: 4px; }
+#score { color: #f0f; text-shadow: 0 0 10px #f0f, 0 0 20px #f0f; font-size: 1.4em; margin-bottom: 10px; }
+canvas { border: 2px solid #0ff; box-shadow: 0 0 15px #0ff, 0 0 30px #0ff; border-radius: 4px; display: block; }
+.btn { background: transparent; color: #0ff; border: 2px solid #0ff; padding: 12px 30px; font-size: 1.1em; font-family: 'Courier New', monospace; cursor: pointer; text-shadow: 0 0 10px #0ff; box-shadow: 0 0 10px #0ff, inset 0 0 10px rgba(0,255,255,0.1); border-radius: 4px; margin-top: 12px; letter-spacing: 2px; transition: all 0.2s; }
+.btn:hover { background: rgba(0,255,255,0.15); box-shadow: 0 0 20px #0ff, 0 0 40px #0ff, inset 0 0 20px rgba(0,255,255,0.2); }
+.controls { display: flex; gap: 15px; margin-top: 12px; }
+.btn-sm { padding: 8px 20px; font-size: 0.95em; }
+#message { color: #f0f; text-shadow: 0 0 10px #f0f; font-size: 1.2em; margin-top: 8px; min-height: 1.6em; }
+.stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+.star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle 2s infinite alternate; }
+@keyframes twinkle { 0% { opacity: 0.2; } 100% { opacity: 1; } }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class="stars"&gt;&lt;/div&gt;
+&lt;h1&gt;NEON RUN&lt;/h1&gt;
+&lt;div id="score"&gt;SCORE: 0&lt;/div&gt;
+&lt;canvas id="game" width="800" height="400"&gt;&lt;/canvas&gt;
+&lt;div id="message"&gt;Press START or Space to play&lt;/div&gt;
+&lt;div style="display:flex; gap:15px; margin-top:10px;"&gt;
+  &lt;button class="btn" id="startBtn"&gt;START&lt;/button&gt;
+  &lt;button class="btn" id="restartBtn" style="display:none;"&gt;RESTART&lt;/button&gt;
+&lt;/div&gt;
+&lt;div class="controls"&gt;
+  &lt;button class="btn btn-sm" id="jumpBtn"&gt;▲ JUMP (Space/↑)&lt;/button&gt;
+  &lt;button class="btn btn-sm" id="duckBtn"&gt;▼ DUCK (↓)&lt;/button&gt;
+&lt;/div&gt;
+&lt;script&gt;
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const groundY = H - 50;
+
+const starsEl = document.querySelector('.stars');
+for (let i = 0; i &lt; 80; i++) {
+  const star = document.createElement('div');
+  star.className = 'star';
+  star.style.left = Math.random() * 100 + '%';
+  star.style.top = Math.random() * 100 + '%';
+  const sz = Math.random() * 2 + 1;
+  star.style.width = star.style.height = sz + 'px';
+  star.style.animationDelay = Math.random() * 2 + 's';
+  starsEl.appendChild(star);
+}
+
+let player, obstacles, score, gameRunning, gameOver, speed, frame, animFrame;
+
+function reset() {
+  player = { x: 80, y: groundY, w: 30, h: 50, vy: 0, jumping: false, ducking: false, color: '#0ff' };
+  obstacles = [];
+  score = 0;
+  speed = 4;
+  frame = 0;
+  gameOver = false;
+  document.getElementById('score').textContent = 'SCORE: 0';
+  document.getElementById('message').textContent = 'Press START or Space to play';
+  document.getElementById('startBtn').style.display = '';
+  document.getElementById('restartBtn').style.display = 'none';
+}
+
+reset();
+
+function spawnObstacle() {
+  const type = Math.random() &lt; 0.5 ? 'ground' : 'flying';
+  let obs;
+  if (type === 'ground') {
+    obs = { x: W + 20, y: groundY + 10, w: 20 + Math.random() * 30, h: 20 + Math.random() * 30, type: 'ground', color: '#f0f' };
+  } else {
+    obs = { x: W + 20, y: groundY - 30 - Math.random() * 60, w: 30, h: 20, type: 'flying', color: '#ff0' };
+  }
+  obstacles.push(obs);
+}
+
+function jump() {
+  if (gameOver) return;
+  if (!player.jumping) {
+    player.vy = -12;
+    player.jumping = true;
+  }
+}
+
+function setDuck(val) {
+  player.ducking = val;
+  player.h = val ? 25 : 50;
+  player.y = val ? groundY + 25 : groundY;
+}
+
+function drawPlayer() {
+  ctx.shadowColor = player.color;
+  ctx.shadowBlur = 15;
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x, player.y, player.w, player.h);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(player.x + 4, player.y + 4, player.w - 8, 4);
+}
+
+function drawObstacle(o) {
+  ctx.shadowColor = o.color;
+  ctx.shadowBlur = 10;
+  ctx.fillStyle = o.color;
+  ctx.fillRect(o.x, o.y, o.w, o.h);
+  ctx.shadowBlur = 0;
+}
+
+function update() {
+  if (!gameRunning || gameOver) return;
+  frame++;
+  score = Math.floor(frame / 10);
+  document.getElementById('score').textContent = 'SCORE: ' + score;
+  speed = 4 + Math.floor(score / 50) * 0.5;
+
+  if (frame % Math.max(40, 80 - Math.floor(score / 20)) === 0) spawnObstacle();
+
+  if (player.jumping) {
+    player.vy += 0.6;
+    player.y += player.vy;
+    if (player.y >= groundY) {
+      player.y = groundY;
+      player.jumping = false;
+      player.vy = 0;
+    }
+  }
+
+  for (let i = obstacles.length - 1; i &gt;= 0; i--) {
+    obstacles[i].x -= speed;
+    if (obstacles[i].x + obstacles[i].w &lt; 0) { obstacles.splice(i, 1); continue; }
+
+    const px = player.x + 4, py = player.y + 4, pw = player.w - 8, ph = player.h - 8;
+    const ox = obstacles[i].x, oy = obstacles[i].y, ow = obstacles[i].w, oh = obstacles[i].h;
+    if (px &lt; ox + ow &amp;&amp; px + pw &gt; ox &amp;&amp; py &lt; oy + oh &amp;&amp; py + ph &gt; oy) {
+      gameOver = true;
+      gameRunning = false;
+      document.getElementById('message').textContent = 'GAME OVER! Score: ' + score;
+      document.getElementById('restartBtn').style.display = '';
+      document.getElementById('startBtn').style.display = 'none';
+      draw();
+      return;
+    }
+  }
+  draw();
+  animFrame = requestAnimationFrame(update);
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.strokeStyle = '#0ff';
+  ctx.shadowColor = '#0ff';
+  ctx.shadowBlur = 10;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, groundY + player.h);
+  ctx.lineTo(W, groundY + player.h);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  ctx.strokeStyle = 'rgba(0,255,255,0.15)';
+  ctx.lineWidth = 1;
+ for (let i = 0; i &lt; W; i += 40) {
+    const gx = (i - (frame * speed) % 40 + W) % W;
+    ctx.beginPath(); ctx.moveTo(gx, groundY + player.h); ctx.lineTo(gx, H); ctx.stroke();
+  }
+ for (let j = groundY + player.h + 20; j &lt; H; j += 20) {
+    ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(W, j); ctx.stroke();
+  }
+
+  drawPlayer();
+  obstacles.forEach(drawObstacle);
+}
+
+function startGame() {
+  reset();
+  gameRunning = true;
+  document.getElementById('message').textContent = '';
+  document.getElementById('startBtn').style.display = 'none';
+  document.getElementById('restartBtn').style.display = '';
+  document.getElementById('restartBtn').textContent = 'RESTART';
+  draw();
+  update();
+}
+
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('restartBtn').addEventListener('click', startGame);
+document.getElementById('jumpBtn').addEventListener('click', jump);
+
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.code === 'ArrowUp') {
+    e.preventDefault();
+    if (gameOver) startGame();
+    else jump();
+  }
+  if (e.code === 'ArrowDown') { e.preventDefault(); setDuck(true); }
+});
+document.addEventListener('keyup', (e) => {
+  if (e.code === 'ArrowDown') { setDuck(false); }
+});
+
+draw();
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
