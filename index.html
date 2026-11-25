@@ -1,0 +1,46 @@
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;head&gt;&lt;title&gt;NEON RUN&lt;/title&gt;
+&lt;style&gt;
+body{margin:0;background:#0a0a1a;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;font-family:monospace}
+canvas{border:2px solid #0ff;box-shadow:0 0 20px #0ff,0 0 40px #f0f}
+#score{position:absolute;top:20px;color:#0ff;font-size:24px;text-shadow:0 0 10px #0ff}
+#restart{position:absolute;bottom:20px;padding:10px 20px;background:#000;color:#f0f;border:2px solid #f0f;font-size:16px;cursor:pointer;display:none;text-transform:uppercase;letter-spacing:2px}
+#restart:hover{background:#f0f;color:#000}
+#start{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#0ff;font-size:18px;cursor:pointer;text-align:center}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;canvas id=c width=800 height=300&gt;&lt;/canvas&gt;
+&lt;div id=score&gt;Score: 0&lt;/div&gt;
+&lt;button id=restart&gt;RESTART&lt;/button&gt;
+&lt;div id=start&gt;PRESS SPACE TO START&lt;/div&gt;
+&lt;script&gt;
+const ctx=c.getContext('2d');
+let player,obstacles,score,gameSpeed,gameOver,started;
+const W=800,H=300,GROUND=H-50;
+function reset(){player={x:100,y:GROUND,w:30,h:50,jumping:false,duking:false,vy:0};obstacles=[];score=0;gameSpeed=5;gameOver=false;started=false;document.getElementById('start').style.display='block';document.getElementById('restart').style.display='none';draw()}
+function spawnObstacle(){const t=Math.random();let o;if(t&lt;0.33){o={x:W,y:GROUND,w:25,h:40,type:'box'}}else if(t&lt;0.66){o={x:W,y:GROUND-20,w:50,h:20,type:'bar'}}else{o={x:W,y:GROUND,w:30,h:55,type:'tall'}}obstacles.push(o)}
+function update(){if(gameOver||!started)return;
+if(player.ducking){player.h=25;player.y=GROUND}
+else if(player.jumping){player.vy+=0.8;player.y+=player.vy;if(player.y>=GROUND){player.y=GROUND;player.jumping=false;player.vy=0}}
+else{player.h=50;player.y=GROUND}
+gameSpeed+=0.003;score++;
+if(Math.random()&lt;0.015+gameSpeed*0.001)spawnObstacle();
+for(let o of obstacles){o.x-=gameSpeed;if(o.x+o.w&lt;0)obstacles.splice(obstacles.indexOf(o),1);
+if(player.x&lt;o.x+o.w&amp;&amp;player.x+player.w&gt;o.x&amp;&amp;player.y-player.h&lt;o.y&amp;&amp;player.y&gt;o.y-h){gameOver=true;document.getElementById('restart').style.display='block'}}}
+function draw(){ctx.fillStyle='#0a0a1a';ctx.fillRect(0,0,W,H);
+ctx.strokeStyle='#0ff';ctx.lineWidth=2;ctx.shadowBlur=10;ctx.shadowColor='#0ff';
+ctx.beginPath();ctx.moveTo(0,GROUND);ctx.lineTo(W,GROUND);ctx.stroke();
+ctx.fillStyle='#0ff';ctx.shadowColor='#0ff';
+ctx.fillRect(player.x,player.y-player.h,player.w,player.h);
+for(let o of obstacles){ctx.fillStyle=o.type==='box'?'#f0f':'#f0f';ctx.shadowColor='#f0f';ctx.fillRect(o.x,o.y-o.h,o.w,o.h)}
+ctx.fillStyle='#0ff';ctx.font='20px monospace';ctx.fillText('SCORE: '+Math.floor(score/10),20,30);
+if(gameOver){ctx.fillStyle='#f0f';ctx.font='40px monospace';ctx.fillText('GAME OVER',W/2-120,H/2)}}
+reset();
+document.addEventListener('keydown',e=>{
+if(e.code==='Space'||e.code==='ArrowUp'){e.preventDefault();if(gameOver){reset();return}if(!started){started=true;document.getElementById('start').style.display='none';return}player.jumping=true}
+if(e.code==='ArrowDown'){e.preventDefault();if(!started){started=true;document.getElementById('start').style.display='none';return}player.ducking=true}
+});
+document.addEventListener('keyup',e=>{if(e.code==='ArrowDown')player.ducking=false});
+document.getElementById('restart').addEventListener('click',()=>reset());
+function loop(){update();draw();requestAnimationFrame(loop)}
+loop();
+&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;
